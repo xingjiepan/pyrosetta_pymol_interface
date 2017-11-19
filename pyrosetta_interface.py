@@ -8,13 +8,23 @@ from pyrosetta import rosetta
 pyrosetta.init()
 poses = {}
 
-def update_structure(pose_name):
-    '''Update the structure of the pose.'''
+def load_pose_into_object(pose_name):
+    '''Load the pose into the object.'''
     pdb_os = rosetta.std.ostringstream()
     poses[pose_name].dump_pdb(pdb_os)
-    cmd.delete(pose_name)
     cmd.read_pdbstr(pdb_os.str(), pose_name)
     cmd.color('green', '{0} and (n. c*)'.format(pose_name))
+
+def update_structure(pose_name):
+    '''Update the structure of the pose.'''
+    pose = poses[pose_name]
+    for i in range(1, pose.size() + 1):
+        for j in range(1, pose.residue(i).natoms() + 1):
+            name = pose.residue(i).atom_name(j)
+            xyz = pose.residue(i).xyz(j)
+
+            cmd.alter_state(1, '{0} and res {1} and n. {2}'.format(pose_name, i, name),
+                    '(x, y, z)=({0}, {1}, {2})'.format(xyz.x, xyz.y, xyz.z))
 
 def load_pose(name, pdb_file):
     '''Load a pdb_file into a pose'''
@@ -22,7 +32,7 @@ def load_pose(name, pdb_file):
     rosetta.core.import_pose.pose_from_file(pose, pdb_file)
     poses[name] = pose
 
-    update_structure(name)
+    load_pose_into_object(name)
     
 def score_pose(name):
     '''Score a pose'''
@@ -78,6 +88,7 @@ cmd.extend("repack_selected_residues", repack_selected_residues)
 ###TEST
 #load_pose('foo', 'demo/1arb.pdb')
 #load_pose('foo', 'demo/short.pdb')
+#cmd.alter_state(1, 'n. ca and res 2', '(x, y, z)=(0, 0, 0)')
 
 #selection_to_residue_selector('(all)')
 #repack_selected_residues('(all)')
