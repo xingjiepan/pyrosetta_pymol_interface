@@ -14,6 +14,7 @@ def update_structure(pose_name):
     poses[pose_name].dump_pdb(pdb_os)
     cmd.delete(pose_name)
     cmd.read_pdbstr(pdb_os.str(), pose_name)
+    cmd.color('green', '{0} and (n. c*)'.format(pose_name))
 
 def load_pose(name, pdb_file):
     '''Load a pdb_file into a pose'''
@@ -38,6 +39,7 @@ def color_pose_by_energy(name):
     for i, e in enumerate(energies):
         cmd.set_color('res{0}_color'.format(i + 1), [ (e - emin) / (emax - emin), 0, (emax - e) / (emax - emin) ])
         cmd.color('res{0}_color'.format(i + 1), 'res {0}'.format(i + 1))
+        cmd.label('res {0} and n. ca'.format(i + 1), '"{0:.2f}"'.format(energies[i]))
 
 def selection_to_residue_selector(pose_name, selection):
     '''Get a residue selector corresponding to a pymol selection.'''
@@ -74,7 +76,7 @@ cmd.extend("repack_selected_residues", repack_selected_residues)
 
 
 ###TEST
-load_pose('foo', 'demo/1arb.pdb')
+#load_pose('foo', 'demo/1arb.pdb')
 #load_pose('foo', 'demo/short.pdb')
 
 #selection_to_residue_selector('(all)')
