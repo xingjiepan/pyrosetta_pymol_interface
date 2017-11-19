@@ -14,6 +14,10 @@ def load_pose(name, pdb_file):
     pose = rosetta.core.pose.Pose()
     rosetta.core.import_pose.pose_from_file(pose, pdb_file)
     poses[name] = pose
+    
+    pdb_os = rosetta.std.ostringstream()
+    poses[name].dump_pdb(pdb_os)
+    cmd.read_pdbstr(pdb_os.str(), name)
 
 def score_pose(name):
     '''Score a pose'''
@@ -22,6 +26,7 @@ def score_pose(name):
 
 def color_pose_by_energy(name):
     '''Color the pose according to the energy.'''
+    score_pose(name)
     energies = [poses[name].energies().residue_total_energy(i) for i in range(1, poses[name].size() + 1)] ###DEBUG
     emax = 1.0 * max(energies)
     emin = 1.0 * min(energies)
@@ -31,11 +36,13 @@ def color_pose_by_energy(name):
         cmd.color('res{0}_color'.format(i + 1), 'res {0}'.format(i + 1))
 
 
-###TEST
-load_pose('foo', 'demo/1arb.pdb')
+cmd.extend("load_pose", load_pose)
+cmd.extend("score_pose", score_pose)
+cmd.extend("color_pose_by_energy", color_pose_by_energy)
 
-pdb_os = rosetta.std.ostringstream()
-poses['foo'].dump_pdb(pdb_os)
-cmd.read_pdbstr(pdb_os.str(), 'foo')
-score_pose('foo')
-color_pose_by_energy('foo')
+
+###TEST
+#load_pose('foo', 'demo/1arb.pdb')
+
+#score_pose('foo')
+#color_pose_by_energy('foo')
